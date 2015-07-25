@@ -35,26 +35,33 @@ cacheSolve <- function(x, ...) {
 }
 
 # tests
-iterations <- 100000
-sampleMatrix <- rbind(c(1, -1/4), c(-1/4, 1))
-expectedResult <- solve(sampleMatrix)
-
-withoutCache <- (function(matrix, iterations){
+(function(){
+  
+  iterations <- 100000
+  sampleMatrix <- rbind(c(1, -1/4), c(-1/4, 1))
+  expectedResult <- solve(sampleMatrix)
+  
   print("testing non cached version...")
   t0 <- Sys.time()
   for(x in 1:iterations)
     solve(sampleMatrix);
-  Sys.time() - t0
-})(sampleMatrix, iterations)
-
-withCache <- (function(matrix, iterations){
+  durationWithoutCache <- Sys.time() - t0
+  print(c("=> without cache:", durationWithoutCache))
+  
   print("testing cached version...")
   cachedMatrix <- makeCacheMatrix(sampleMatrix)
   t0 <- Sys.time()
   for(x in 1:iterations)
     cacheSolve(cachedMatrix);
-  Sys.time() - t0  
-})(sampleMatrix, iterations)
-
-print("test succeeded?")
-(withCache < withoutCache) && (expectedResult == cacheSolve(cachedMatrix))
+  durationWithCache <- Sys.time() - t0
+  print(c("=> with cache:", durationWithCache))
+    
+  faster <- durationWithCache < durationWithoutCache
+  sameRes <- all.equal(expectedResult, cacheSolve(cachedMatrix))
+  
+  print(c("test: faster with cache?", faster))
+  print(c("test: same result?", sameRes))
+  print(c("test result:", faster && sameRes))
+  
+  faster && sameRes
+})()
